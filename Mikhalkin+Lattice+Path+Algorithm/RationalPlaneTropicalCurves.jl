@@ -1,5 +1,5 @@
 using Oscar
-#This file is structured as follows: We start with all functions needed to implement the recursive part of the algorithm starting from a lambda-increasing lattice path to the two boundary paths D1 and D2. The the recursive computation of the multiplicity follows.
+#This file is structured as follows: We start with all functions needed to implement the recursive part of the algorithm starting from a lambda-increasing lattice path to the two boundary paths D1 and D2. The recursive computation of the multiplicity follows.
 #The next part of the code filters out the paths that contribute with positive multiplicity.
 #In order to build the corresponding Newton subdivisions and associated tropical curves, the next part of this file will introduce a tree structure that captures the recursive process for each initial lambda-increasing lattice path.
 #The final section of the code builds and visualizes the Newton subdivisions and associated tropical curves.
@@ -7,7 +7,7 @@ using Oscar
 #####
 #In this section of the code, we determine when a path turns to the left/right for the first time and cut and fold accordingly. This is required for the calculation of multiplicity.
 
-#The input is a matrix, whose columns should be thought of as vectors, and an integer k. The function calculates the area of the polygon that has as vertices the k-1,k,k+1 columns of the input matrix.
+#The input is a matrix, whose columns should be thought of as vectors, and an integer k. The function calculates the normalized area of the polygon that has as vertices the k-1,k,k+1 columns of the input matrix.
 function area(M::ZZMatrix,k::Integer)::Integer
     E=zero_matrix(ZZ,2,2)
     if k<2 || k>size(M,1)-1
@@ -46,7 +46,7 @@ function right_turn(M::ZZMatrix)::Integer
     return r
 end
 
-#The input is a matrix representing a path in the plane. The function cuts the vertex corresponding to the first left turn of the path.
+#The input is a matrix representing a path in the plane. The function cuts the vertex corresponding to the first left turn of the path and returns the new path. If cutting is not possible, the function returns nothing.
 function lcut(M::ZZMatrix)::Union{ZZMatrix,Nothing}
     N=zero_matrix(ZZ,size(M,1)-1,2)
     if left_turn(M)<1
@@ -65,7 +65,7 @@ function lcut(M::ZZMatrix)::Union{ZZMatrix,Nothing}
     return N
 end
 
-#The input is a matrix representing a path in the plane. The function cuts the vertex corresponding to the first right turn of the path.
+#The input is a matrix representing a path in the plane. The function cuts the vertex corresponding to the first right turn of the path and returns the new path. If cutting is not possible, the function returns nothing.
 function rcut(M::ZZMatrix)::Union{ZZMatrix,Nothing}
     M1=zero_matrix(ZZ,size(M,1)-1,2)
     if right_turn(M)<1
@@ -84,7 +84,7 @@ function rcut(M::ZZMatrix)::Union{ZZMatrix,Nothing}
     return M1
 end
 
-#The input is a matrix representing a path in the plane. The function finds the first left turn, say column l, which is a point in the plane. Then, it reflects that point along the line containing the points represented by the (l-1) and (l+1) colums of the input path. This procedure is called folding.
+#The input is a matrix representing a path in the plane. The function finds the first left turn, say column l, which is a point in the plane. Then, it reflects that point along the line containing the points represented by the (l-1) and (l+1) colums of the input path. This procedure is called folding. The function returns the new path. If folding is not possible because the path would leave the given Newton polygon, the function returns nothing.
 function lfold(M::ZZMatrix,d::Integer)::Union{ZZMatrix,Nothing}
     M2=zero_matrix(ZZ,size(M,1),2)
     for i in 1:size(M2,1)
@@ -102,7 +102,7 @@ function lfold(M::ZZMatrix,d::Integer)::Union{ZZMatrix,Nothing}
     return M2
 end
 
-#The input is a matrix representing a path in the plane. The function finds the first right turn, say column l, which is a point in the plane. Then, it reflects that point along the line containing the points represented by the (l-1) and (l+1) colums of the input path. This procedure is called folding.
+#The input is a matrix representing a path in the plane. The function finds the first right turn, say column l, which is a point in the plane. Then, it reflects that point along the line containing the points represented by the (l-1) and (l+1) colums of the input path. This procedure is called folding. The function returns the new path. If folding is not possible because the path would leave the given Newton polygon, the function returns nothing.
 function rfold(M::ZZMatrix,d::Integer)::Union{ZZMatrix,Nothing}
     M2=zero_matrix(ZZ,size(M,1),2)
     for i in 1:size(M2,1)
@@ -195,6 +195,7 @@ function multiplicity(M::Union{ZZMatrix,Nothing},d::Integer)::Integer
     return lmultiplicity(M,d)*rmultiplicity(M,d)
 end
 
+######
 #In this section of the code, we construct the paths that contribute with positive multiplicity to the curve counting problem for a fixed degree d.
 
 #This is an auxiliary function that makes the indexing in the function building_path() easier.
